@@ -40,8 +40,6 @@ async function sendFriendRequest(req, res) {
   }
 }
 
-
-
 async function acceptFriendRequest(req, res) {
   try {
     const { friendId } = req.params;
@@ -61,7 +59,10 @@ async function acceptFriendRequest(req, res) {
     }
 
     friend.following.push(userId);     
-    user.followers.push(friendId);     
+    user.followers.push(friendId);   
+    
+    // friend.following.push(_id:userId,name:user.name);     
+    // user.followers.push(friendId,name:user.name); 
 
     user.friendRequests = user.friendRequests.filter(id => id.toString() !== friendId);
 

@@ -1,27 +1,32 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
-// const userSchema = new mongoose.Schema({
-//   name: {type:String,required:true},
-//   email: { type: String, unique: true, required: true },
-//   password: { type: String, required: true },
-//   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-//   friendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
-// });
-
-
-
-
 const userSchema = new mongoose.Schema({
-  name: {type:String, required:true},
-  email: {type:String, required:true},
-  password: {type:String, required:true},
+  name: {
+    type: String,
+    required: [true, "Name is required"],
+    minlength: [3, "Name must be at least 3 characters long"],
+    trim: true
+  },
+  email: {
+    type: String,
+    required: [true, "Email is required"],
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            "Please provide a valid email address"]
+  },
+  password: {
+    type: String,
+    required: [true, "Password is required"],
+    minlength: [6, "Password must be at least 6 characters long"]
+  },
   friendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] 
 });
-
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -34,3 +39,11 @@ userSchema.methods.comparePassword = function (password) {
 };
 
 module.exports = mongoose.model("User", userSchema);
+
+
+
+//   friendRequests: [{_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User' },name:String}],
+//   followers: [{_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User' },name:String}],
+//   following: [{_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User' },name:String}],
+//   friends: [{_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User' },name:String}]
+  

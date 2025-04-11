@@ -7,4 +7,5 @@ const router = express.Router();
 router.get("/send-request/:friendId", authMiddleware, sendFriendRequest);
 router.get("/accept-request/:friendId", authMiddleware, acceptFriendRequest);
 
+
 module.exports = router;
