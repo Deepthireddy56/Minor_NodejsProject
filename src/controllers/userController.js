@@ -80,5 +80,4 @@ async function acceptFriendRequest(req, res) {
   }
 }
 
-
 module.exports = { sendFriendRequest, acceptFriendRequest };

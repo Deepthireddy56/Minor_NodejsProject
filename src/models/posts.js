@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema({
@@ -15,6 +16,14 @@ const postSchema = new mongoose.Schema({
   authorName: {
     type: String,
     required: true
+  },
+  community: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Community"
+  },
+  isCommunityPost: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true 

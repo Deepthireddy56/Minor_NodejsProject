@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     minlength: [3, "Name must be at least 3 characters long"],
     trim: true
   },
-  email: {
+  email: {  
     type: String,
     required: [true, "Email is required"],
     unique: true,
@@ -40,10 +40,3 @@ userSchema.methods.comparePassword = function (password) {
 
 module.exports = mongoose.model("User", userSchema);
 
-
-
-//   friendRequests: [{_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User' },name:String}],
-//   followers: [{_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User' },name:String}],
-//   following: [{_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User' },name:String}],
-//   friends: [{_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User' },name:String}]
-  

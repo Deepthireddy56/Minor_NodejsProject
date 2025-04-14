@@ -36,12 +36,13 @@ const app = express();
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
-
+const communityRoutes = require("./routes/communityRoutes");
 app.use(express.json());
 app.use(cors());
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
+app.use("/communities",communityRoutes)
 
 module.exports = app;

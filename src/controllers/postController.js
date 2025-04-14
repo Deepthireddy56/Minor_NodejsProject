@@ -2,8 +2,8 @@ const postService = require("../services/postService");
 
 async function createPost(req, res) {
   try {
-    const { content } = req.body;
-    const post = await postService.createPost(content, req.userId);
+    const { content, communityId } = req.body;
+    const post = await postService.createPost(content, req.userId, communityId || null);
     res.status(201).json({ 
       message: "Post created successfully", 
       post 
@@ -31,8 +31,19 @@ async function getFriendsPosts(req, res) {
   }
 }
 
+async function getCommunityPosts(req, res) {
+  try {
+    const { communityId } = req.params;
+    const posts = await postService.getCommunityPosts(communityId, req.userId);
+    res.json(posts);
+  } catch (err) {
+    res.status(403).json({ error: err.message });
+  }
+}
+
 module.exports = { 
   createPost, 
   getUserOwnPosts,
-  getFriendsPosts
+  getFriendsPosts,
+  getCommunityPosts
 };
