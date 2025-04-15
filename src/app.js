@@ -37,6 +37,8 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
 const communityRoutes = require("./routes/communityRoutes");
+const subGroupRoutes = require("./routes/subGroupRoutes");
+
 app.use(express.json());
 app.use(cors());
 
@@ -44,5 +46,6 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/communities",communityRoutes)
+app.use("/subgroups", subGroupRoutes);
 
 module.exports = app;

@@ -48,10 +48,68 @@ async function getUserCommunities(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+async function removeMember(req, res) {
+  try {
+    const { communityId, memberId } = req.params;
+    const community = await communityService.removeMember(
+      communityId, 
+      req.userId, 
+      memberId
+    );
+    res.json({ message: "Member removed successfully", community });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function transferAdmin(req, res) {
+  try {
+    const { communityId, newAdminId } = req.params;
+    const community = await communityService.transferAdmin(
+      communityId,
+      req.userId,
+      newAdminId
+    );
+    res.json({ message: "Admin rights transferred", community });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+async function addAdmin(req, res) {
+  try {
+    const { communityId, userId } = req.params;
+    const community = await communityService.addCommunityAdmin(
+      communityId,
+      req.userId,
+      userId
+    );
+    res.json({ message: "Admin added successfully", community });
+  } catch (err) {
+    res.status(403).json({ error: err.message });
+  }
+}
+
+async function removeAdmin(req, res) {
+  try {
+    const { communityId, adminId } = req.params;
+    const community = await communityService.removeCommunityAdmin(
+      communityId,
+      req.userId,
+      adminId
+    );
+    res.json({ message: "Admin removed successfully", community });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
 
 module.exports = {
   createCommunity,
   getCommunityDetails,
   joinCommunity,
-  getUserCommunities
+  getUserCommunities,
+  removeMember,
+  transferAdmin,
+  addAdmin,
+  removeAdmin
 };

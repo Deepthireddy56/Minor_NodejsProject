@@ -12,15 +12,25 @@ const communitySchema = new mongoose.Schema({
     type: String,
     maxlength: [200, "Description must be under 200 characters"]
   },
-  admin: {
+  creator: {  
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
+  admins: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  }],
   members: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
+  role: {
+    type: String,
+    enum: ["member", "admin"],
+    default: "member"
+  },
   createdAt: {
     type: Date,
     default: Date.now
