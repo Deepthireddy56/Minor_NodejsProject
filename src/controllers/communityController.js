@@ -40,6 +40,23 @@ async function joinCommunity(req, res) {
   }
 }
 
+async function addCommunityMember(req, res) {
+  try {
+    const { communityId, userId } = req.params;
+    const community = await communityService.addMemberToCommunity(
+      communityId, 
+      userId,
+      req.userId
+    );
+    res.json({ 
+      message: "Member added to community successfully",
+      community
+    });
+  } catch (err) {
+    res.status(403).json({ error: err.message });
+  }
+}
+
 async function getUserCommunities(req, res) {
   try {
     const communities = await communityService.getCommunitiesForUser(req.userId);
@@ -102,6 +119,18 @@ async function removeAdmin(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
+async function leaveCommunity(req, res) {
+  try {
+    const { communityId } = req.params;
+    const community = await communityService.leaveCommunity(communityId, req.userId);
+    res.json({ 
+      message: "Left community successfully",
+      community
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
 
 module.exports = {
   createCommunity,
@@ -111,5 +140,7 @@ module.exports = {
   removeMember,
   transferAdmin,
   addAdmin,
-  removeAdmin
+  removeAdmin,
+  leaveCommunity,
+  addCommunityMember
 };

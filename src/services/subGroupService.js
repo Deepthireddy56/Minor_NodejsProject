@@ -125,10 +125,33 @@ async function deleteSubGroup(subGroupId, requesterId) {
   }
 }
 
+async function joinSubGroup(subGroupId, userId) {
+  const subGroup = await SubGroup.findById(subGroupId).populate('community');
+  if (!subGroup) throw new Error("Subgroup not found");
+
+  // Check if user is member of parent community
+  const isCommunityMember = subGroup.community.members.some(
+    member => member.toString() === userId.toString()
+  );
+  
+  if (!isCommunityMember) {
+    throw new Error("You must be a community member to join this subgroup");
+  }
+
+  if (subGroup.members.some(member => member.toString() === userId.toString())) {
+    throw new Error("Already a member of this subgroup");
+  }
+
+  subGroup.members.push(userId);
+  await subGroup.save();
+  return subGroup;
+}
+
 
 module.exports={
     createSubGroup,
     addSubGroupMember,
     removeSubGroupMember,
-    deleteSubGroup
+    deleteSubGroup,
+    joinSubGroup
 }

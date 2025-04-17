@@ -62,10 +62,24 @@ async function removeMember(req, res) {
     }
   }
 
+  async function joinSubGroup(req, res) {
+    try {
+      const { subGroupId } = req.params;
+      const subGroup = await subGroupService.joinSubGroup(subGroupId, req.userId);
+      res.json({ 
+        message: "Joined subgroup successfully",
+        subGroup 
+      });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
 module.exports={
     createSubGroup,
     addMember,
     removeMember,
-    deleteSubGroup
+    deleteSubGroup,
+    joinSubGroup
 
 }

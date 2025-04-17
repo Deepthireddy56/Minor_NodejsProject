@@ -1,20 +1,80 @@
 const Community = require("../models/community");
 const User = require("../models/user");
+const subGroupService = require("./subGroupService");
+
+// async function createCommunity(name, description, creatorId) {
+
+//   const creator = await User.findById(creatorId);
+//   if (!creator) throw new Error("Creator user not found");
+
+//   const community = new Community({
+//     name,
+//     description,
+//     creator: creatorId,
+//     admins: [creatorId], 
+//     members: [creatorId] 
+//   });
+
+//   return await community.save();
+// }
+
+// async function createCommunity(name, description, creatorId) {
+//   const creator = await User.findById(creatorId);
+//   if (!creator) throw new Error("Creator user not found");
+
+//   const community = new Community({
+//     name,
+//     description,
+//     creator: creatorId,
+//     admins: [creatorId], 
+//     members: [creatorId] 
+//   });
+
+//   const savedCommunity = await community.save();
+  
+//   // Create default General subgroup
+//   await subGroupService.createSubGroup(
+//     "General",
+//     "Default subgroup for general discussions",
+//     savedCommunity._id,
+//     creatorId
+//   );
+
+//   return savedCommunity;
+// }
+
 
 async function createCommunity(name, description, creatorId) {
-
   const creator = await User.findById(creatorId);
   if (!creator) throw new Error("Creator user not found");
 
+  // Create the community
   const community = new Community({
     name,
     description,
     creator: creatorId,
-    admins: [creatorId], 
-    members: [creatorId] 
+    admins: [creatorId],
+    members: [creatorId]
   });
 
-  return await community.save();
+  // Save the community first
+  const savedCommunity = await community.save();
+
+  // Now create the default "General" subgroup
+  try {
+    await subGroupService.createSubGroup(
+      "General",  // Default name
+      "Default subgroup for general discussions",  // Default description
+      savedCommunity._id,  // Community ID
+      creatorId  // Admin of the subgroup (same as creator)
+    );
+  } catch (subGroupError) {
+    // If subgroup creation fails, delete the community to maintain consistency
+    await Community.findByIdAndDelete(savedCommunity._id);
+    throw new Error(`Failed to create default subgroup: ${subGroupError.message}`);
+  }
+
+  return savedCommunity;
 }
 
 async function getCommunityById(communityId) {
@@ -24,9 +84,36 @@ async function getCommunityById(communityId) {
     .populate('members', 'name email');
 }
 
-async function addMemberToCommunity(communityId, userId) {
-  const community = await Community.findById(communityId);
+// async function addMemberToCommunity(communityId, userId) {
+//   const community = await Community.findById(communityId);
+//   if (!community) throw new Error("Community not found");
+
+//   if (community.members.includes(userId)) {
+//     throw new Error("User is already a member of this community");
+//   }
+
+//   community.members.push(userId);
+//   return await community.save();
+// }
+
+// Update in communityService.js
+
+async function addMemberToCommunity(communityId, userId, requesterId) {
+  const [community, userToAdd] = await Promise.all([
+    Community.findById(communityId),
+    User.findById(userId)
+  ]);
+
   if (!community) throw new Error("Community not found");
+  if (!userToAdd) throw new Error("User not found");
+
+  const isAdmin = community.admins.some(admin => 
+    admin.toString() === requesterId.toString()
+  );
+
+  if (!isAdmin) {
+    throw new Error("Only community admins can add members");
+  }
 
   if (community.members.includes(userId)) {
     throw new Error("User is already a member of this community");
@@ -129,6 +216,44 @@ async function transferAdmin(communityId, currentAdminId, newAdminId) {
   return community;
 }
 
+// Add to communityService.js
+async function canCreatorLeave(communityId, creatorId) {
+  const community = await Community.findById(communityId);
+  if (!community) throw new Error("Community not found");
+  
+  // Verify the user is actually the creator
+  if (community.creator.toString() !== creatorId.toString()) {
+    return true; 
+  }
+  
+  // Creator can only leave if there are other admins
+  return community.admins.length > 1;
+}
+
+async function leaveCommunity(communityId, userId) {
+  const community = await Community.findById(communityId);
+  if (!community) throw new Error("Community not found");
+
+  // Check if user is the creator
+  if (community.creator.toString() === userId.toString()) {
+    const canLeave = await this.canCreatorLeave(communityId, userId);
+    if (!canLeave) {
+      throw new Error("Before leaving, transfer your creator rights to another admin");
+    }
+  }
+
+  // Remove from members and admins
+  community.members = community.members.filter(
+    member => member.toString() !== userId.toString()
+  );
+  community.admins = community.admins.filter(
+    admin => admin.toString() !== userId.toString()
+  );
+
+  return await community.save();
+}
+
+
 module.exports = {
   createCommunity,
   getCommunityById,
@@ -138,5 +263,7 @@ module.exports = {
   isCommunityMember,
   addCommunityAdmin,
   removeCommunityAdmin,
-  transferAdmin
+  transferAdmin,
+  leaveCommunity,
+  canCreatorLeave
 };
