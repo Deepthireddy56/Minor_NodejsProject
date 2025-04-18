@@ -2,48 +2,6 @@ const Community = require("../models/community");
 const User = require("../models/user");
 const subGroupService = require("./subGroupService");
 
-// async function createCommunity(name, description, creatorId) {
-
-//   const creator = await User.findById(creatorId);
-//   if (!creator) throw new Error("Creator user not found");
-
-//   const community = new Community({
-//     name,
-//     description,
-//     creator: creatorId,
-//     admins: [creatorId], 
-//     members: [creatorId] 
-//   });
-
-//   return await community.save();
-// }
-
-// async function createCommunity(name, description, creatorId) {
-//   const creator = await User.findById(creatorId);
-//   if (!creator) throw new Error("Creator user not found");
-
-//   const community = new Community({
-//     name,
-//     description,
-//     creator: creatorId,
-//     admins: [creatorId], 
-//     members: [creatorId] 
-//   });
-
-//   const savedCommunity = await community.save();
-  
-//   // Create default General subgroup
-//   await subGroupService.createSubGroup(
-//     "General",
-//     "Default subgroup for general discussions",
-//     savedCommunity._id,
-//     creatorId
-//   );
-
-//   return savedCommunity;
-// }
-
-
 async function createCommunity(name, description, creatorId) {
   const creator = await User.findById(creatorId);
   if (!creator) throw new Error("Creator user not found");
@@ -84,19 +42,25 @@ async function getCommunityById(communityId) {
     .populate('members', 'name email');
 }
 
-// async function addMemberToCommunity(communityId, userId) {
-//   const community = await Community.findById(communityId);
-//   if (!community) throw new Error("Community not found");
 
-//   if (community.members.includes(userId)) {
-//     throw new Error("User is already a member of this community");
-//   }
 
-//   community.members.push(userId);
-//   return await community.save();
-// }
+async function joinCommunity(communityId, userId) {
+  const [community, user] = await Promise.all([
+    Community.findById(communityId),
+    User.findById(userId)
+  ]);
 
-// Update in communityService.js
+  if (!community) throw new Error("Community not found");
+  if (!user) throw new Error("User not found");
+
+  // Check if already a member
+  if (community.members.some(member => member.toString() === userId.toString())) {
+    throw new Error("You're already a member");
+  }
+
+  community.members.push(userId);
+  return await community.save();
+}
 
 async function addMemberToCommunity(communityId, userId, requesterId) {
   const [community, userToAdd] = await Promise.all([
@@ -106,6 +70,7 @@ async function addMemberToCommunity(communityId, userId, requesterId) {
 
   if (!community) throw new Error("Community not found");
   if (!userToAdd) throw new Error("User not found");
+  if (!requesterId) throw new Error("Authentication required");
 
   const isAdmin = community.admins.some(admin => 
     admin.toString() === requesterId.toString()
@@ -258,6 +223,7 @@ module.exports = {
   createCommunity,
   getCommunityById,
   addMemberToCommunity,
+  joinCommunity,
   getCommunitiesForUser,
   isCommunityAdmin,
   isCommunityMember,

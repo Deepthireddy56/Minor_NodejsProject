@@ -30,13 +30,16 @@ async function getCommunityDetails(req, res) {
 async function joinCommunity(req, res) {
   try {
     const { communityId } = req.params;
-    const community = await communityService.addMemberToCommunity(communityId, req.userId);
-    res.json({ 
+    const community = await communityService.joinCommunity(
+      communityId,
+      req.userId
+    );
+    res.json({
       message: "Joined community successfully",
       community
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 }
 
